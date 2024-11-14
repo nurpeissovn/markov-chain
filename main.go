@@ -3,22 +3,36 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 )
 
-var WordSlice []string
-var Str []string
+var (
+	WordSlice []string
+	Str       []string
+	Result    string
+)
 
 func main() {
-
 	input := os.Args[1:]
 
 	if len(input) == 0 {
+		Result += "of the"
 		read()
-		// chain()
-	}
+		data(2)
+		chain(Result)
+		fmt.Println(len(Result), Result)
+		for i := 0; i < 20; i++ {
+			Str = []string{}
+			data(len(strings.Fields(Result)) - 1)
+			chain(Result)
 
+			// break
+			fmt.Println(len(strings.Fields(Result)))
+
+		}
+	}
 }
 
 func read() {
@@ -30,10 +44,11 @@ func read() {
 
 		WordSlice = append(WordSlice, words...)
 	}
-	temp := ""
-	given := 3
+}
 
-	// Map := make(map[string][]string)
+func data(given int) {
+	temp := ""
+
 	for i := 0; i < len(WordSlice); i++ {
 
 		for j := i; j < given+i; j++ {
@@ -42,46 +57,32 @@ func read() {
 
 				if j < given+i-1 && j < len(WordSlice)-1 {
 					temp += " "
-
 				}
 			}
 		}
 		Str = append(Str, temp)
 		temp = ""
-		i += given - 1
 
 	}
-
-	fmt.Println(Str[0])
-	fmt.Println(Str[1])
-	fmt.Println(Str[3])
-	fmt.Println(Str[3])
-	fmt.Println(Str[len(Str)-2])
-	fmt.Println(Str[len(Str)-1])
-	for i := range Str {
-		if Str[i] == "my younger and" {
-
-			word := strings.Fields(Str[i+1])
-			fmt.Println(Str[i], word[0])
-
-		}
-	}
-
+	fmt.Println(Str[0], "tekesris")
 }
 
-func chain() {
-	// san := 0
-	// str, str2 := "", ""
-	// for i := 0; i < len(Str); i++ {
-	// 	// index := strings.Index(Str, "in my")
-	// 	for j := 0; j < len(Str); j++ {
-	// 		if j != len(Str)-3 {
-	// 			if Str[i:i+2] == Str[j:j+2] {
-	// 				fmt.Println(Str[j : j+3])
-	// 			}
-	// 		}
-	// 	}
+func chain(prefix string) {
+	var tempSlice []string
+	temp := []string{}
+	rndm := 0
 
-	// }
+	for i, k := range Str {
+		if k == prefix {
+			rndm++
+			temp = strings.Fields(Str[i+1])
+			tempSlice = append(tempSlice, temp[1])
 
+			temp = []string{}
+			// fmt.Println(prefix)
+		}
+	}
+	if rndm != 0 {
+		Result += " " + tempSlice[rand.Intn(rndm)]
+	}
 }
