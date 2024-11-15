@@ -9,29 +9,30 @@ import (
 )
 
 var (
-	WordSlice []string
-	Str       []string
-	Result    string
+	WordSlice  []string
+	Str        []string
+	Result     []string
+	TotalWords int
 )
 
 func main() {
 	input := os.Args[1:]
+	read()
 
 	if len(input) == 0 {
-		Result += "of the"
-		read()
-		data(2)
-		chain(Result)
-		fmt.Println(len(Result), Result)
-		for i := 0; i < 20; i++ {
+		Result = append(Result, WordSlice[:2]...)
+		for {
 			Str = []string{}
-			data(len(strings.Fields(Result)) - 1)
-			chain(Result)
+			makeSentence(len(Result))
+			chain(strings.Join(Result, " "), 100)
 
-			// break
-			fmt.Println(len(strings.Fields(Result)))
+			if len(Result) == 100 {
+				break
+			}
 
 		}
+		// fmt.Println(Result)
+
 	}
 }
 
@@ -46,7 +47,7 @@ func read() {
 	}
 }
 
-func data(given int) {
+func makeSentence(given int) {
 	temp := ""
 
 	for i := 0; i < len(WordSlice); i++ {
@@ -64,25 +65,35 @@ func data(given int) {
 		temp = ""
 
 	}
-	fmt.Println(Str[0], "tekesris")
+
 }
 
-func chain(prefix string) {
+func chain(prefix string, shek int) {
 	var tempSlice []string
 	temp := []string{}
 	rndm := 0
-
+	// fmt.Println(TotalWords, len(WordSlice))
+	if len(strings.Fields(Str[0])) == len(WordSlice) {
+		os.Exit(1)
+	}
 	for i, k := range Str {
 		if k == prefix {
-			rndm++
-			temp = strings.Fields(Str[i+1])
-			tempSlice = append(tempSlice, temp[1])
+			fmt.Println(i, len(strings.Fields(Str[0])), Str[0])
 
-			temp = []string{}
-			// fmt.Println(prefix)
+			rndm++
+			if len(strings.Fields(Str[0])) < shek {
+				temp = strings.Fields(Str[i+1])
+				tempSlice = append(tempSlice, temp[len(temp)-1])
+				fmt.Println(temp, len(temp))
+				temp = []string{}
+
+			}
+
 		}
+
 	}
+
 	if rndm != 0 {
-		Result += " " + tempSlice[rand.Intn(rndm)]
+		Result = append(Result, tempSlice[rand.Intn(rndm)])
 	}
 }
