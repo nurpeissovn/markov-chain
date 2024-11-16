@@ -16,7 +16,6 @@ var (
 )
 
 func engine(num, wordlen int) {
-
 	i := 0
 	for {
 		Str = []string{}
@@ -29,8 +28,8 @@ func engine(num, wordlen int) {
 		}
 
 	}
-
 }
+
 func printResult() {
 	for i, k := range Result {
 		fmt.Print(k)
@@ -69,7 +68,6 @@ func makeSentence(given int) {
 			temp = ""
 		}
 	}
-
 }
 
 func chain(prefix string) {
@@ -81,7 +79,6 @@ func chain(prefix string) {
 		os.Exit(0)
 	}
 	for i, k := range Str {
-
 		if k == prefix {
 			san++
 			if i < len(Str)-1 {
@@ -94,7 +91,6 @@ func chain(prefix string) {
 			}
 
 		}
-
 	}
 
 	if rndm != 0 {
@@ -104,12 +100,13 @@ func chain(prefix string) {
 		os.Exit(0)
 	}
 }
+
 func help() {
 	fmt.Print("Markov Chain text generator.", "\n", "\n")
 	fmt.Print("Usage:", "\n", "markovchain [-w <N>] [-p <S>] [-l <N>]", "\n", "markovchain --help", "\n", "\n")
 	fmt.Println("Options:", "\n", "--help   Show this screen.", "\n", "-w N   Number of maximum words", "\n", "-p S   Starting prefix", "\n", "-l N   Prefix length")
-
 }
+
 func main() {
 	input := os.Args[1:]
 	read()
@@ -125,13 +122,11 @@ func main() {
 
 		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
 			engine(num, 2)
-
 		} else if err != nil || num > 10000 || num < 0 {
 			fmt.Println("Error: provide valid number.")
 			help()
 		}
 	} else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" && input[3] != "" && len(strings.Fields(input[3])) > 1 {
-
 		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
 			Result = append(Result, strings.Fields(input[3])...)
 			engine(num, len(strings.Fields(input[3])))
@@ -141,14 +136,12 @@ func main() {
 			help()
 
 		}
-
 	} else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
 		num, err := strconv.Atoi(input[1])
 		san, errors := strconv.Atoi(input[5])
 
 		if errors != nil || err != nil || san > 5 || num > 10000 || num < 0 || san < 2 || len(strings.Fields(input[3])) < san {
 			fmt.Println("Error: provide valid numbers")
-
 		} else if len(strings.Fields(input[3])) >= san {
 			slice := strings.Fields(input[3])
 			Result = append(Result, slice[:san]...)
@@ -158,5 +151,4 @@ func main() {
 	} else {
 		help()
 	}
-
 }
