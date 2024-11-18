@@ -117,8 +117,7 @@ func main() {
 	read()
 
 	if len(WordSlice) <= 2 {
-		// Result = append(Result, WordSlice[0:]...)
-		// printResult()
+
 		fmt.Println("Error: invalid input or file should contain more than 2 words")
 		return
 	} else if len(input) == 0 {
