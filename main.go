@@ -11,14 +11,14 @@ import (
 
 var (
 	WordSlice []string
-	Str       []string
+	Sentence  []string
 	Result    []string
 )
 
 func engine(num, wordlen int) {
 	i := 0
 	for {
-		Str = []string{}
+		Sentence = []string{}
 		makeSentence(wordlen)
 		chain(strings.Join(Result[i:], " "))
 		i++
@@ -64,7 +64,7 @@ func makeSentence(given int) {
 		if i+given <= len(WordSlice) {
 			temp = strings.Join(WordSlice[i:i+given], " ")
 
-			Str = append(Str, temp)
+			Sentence = append(Sentence, temp)
 			temp = ""
 		}
 	}
@@ -74,17 +74,18 @@ func chain(prefix string) {
 	var tempSlice []string
 	temper := []string{}
 	san, rndm := 0, 0
-	if len(strings.Fields(Str[0])) == len(WordSlice) || prefix == Str[len(Str)-1] {
+
+	if prefix == Sentence[len(Sentence)-1] {
 		printResult()
 		os.Exit(0)
 	}
-	for i, k := range Str {
+	for i, k := range Sentence {
 		if k == prefix {
 			san++
-			if i < len(Str)-1 {
+			if i < len(Sentence)-1 {
 				rndm++
 
-				temper = strings.Fields(Str[i+1])
+				temper = strings.Fields(Sentence[i+1])
 				tempSlice = append(tempSlice, temper[len(temper)-1])
 				temper = []string{}
 
@@ -109,9 +110,16 @@ func help() {
 
 func main() {
 	input := os.Args[1:]
+	if len(input) != 0 && input[0] == "--help" {
+		help()
+		return
+	}
 	read()
-	if len(WordSlice) == 1 {
-		fmt.Println(WordSlice[0])
+
+	if len(WordSlice) <= 2 {
+		// Result = append(Result, WordSlice[0:]...)
+		// printResult()
+		fmt.Println("Error: invalid input or file should contain more than 2 words")
 		return
 	} else if len(input) == 0 {
 		Result = append(Result, WordSlice[:2]...)
@@ -124,7 +132,6 @@ func main() {
 			engine(num, 2)
 		} else if err != nil || num > 10000 || num < 0 {
 			fmt.Println("Error: provide valid number.")
-			help()
 		}
 	} else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" && input[3] != "" && len(strings.Fields(input[3])) > 1 {
 		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
@@ -133,8 +140,6 @@ func main() {
 
 		} else if err != nil || num > 10000 || num < 0 {
 			fmt.Println("Error: provide valid number.")
-			help()
-
 		}
 	} else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
 		num, err := strconv.Atoi(input[1])
