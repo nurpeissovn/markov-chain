@@ -105,7 +105,7 @@ func chain(prefix string) {
 func help() {
 	fmt.Print("Markov Chain text generator.", "\n", "\n")
 	fmt.Print("Usage:", "\n", "markovchain [-w <N>] [-p <S>] [-l <N>]", "\n", "markovchain --help", "\n", "\n")
-	fmt.Println("Options:", "\n", "--help   Show this screen.", "\n", "-w N   Number of maximum words", "\n", "-p S   Starting prefix", "\n", "-l N   Prefix length")
+	fmt.Println("Options:", "\n", "--help   Show this screen.", "\n", "-w N   Number of maximum words", "\n", "-p S   Starting prefix. By default length is 2", "\n", "-l N   Prefix length. By default maximum is 5")
 }
 
 func main() {
@@ -132,7 +132,11 @@ func main() {
 		} else if err != nil || num > 10000 || num < 0 {
 			fmt.Println("Error: provide valid number.")
 		}
-	} else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" && input[3] != "" && len(strings.Fields(input[3])) > 1 {
+	} else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" {
+		if len(strings.Fields(input[3])) <= 1 {
+			fmt.Println("Length of prefix not valid")
+			return
+		}
 		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
 			Result = append(Result, strings.Fields(input[3])...)
 			engine(num, len(strings.Fields(input[3])))
@@ -141,10 +145,14 @@ func main() {
 			fmt.Println("Error: provide valid number.")
 		}
 	} else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
+
 		num, err := strconv.Atoi(input[1])
 		san, errors := strconv.Atoi(input[5])
-
-		if errors != nil || err != nil || san > 5 || num > 10000 || num < 0 || san < 2 || len(strings.Fields(input[3])) < san {
+		if len(strings.Fields(input[3])) <= 1 {
+			fmt.Println("Length of prefix not valid")
+			return
+		}
+		if errors != nil || err != nil || san > 5 || num > 10000 || num <= 0 || san < 2 || len(strings.Fields(input[3])) < san {
 			fmt.Println("Error: provide valid numbers")
 		} else if len(strings.Fields(input[3])) >= san {
 			slice := strings.Fields(input[3])
