@@ -2,42 +2,61 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"math/rand"
 	"os"
-	"strconv"
 	"strings"
+	"time"
 )
 
 var (
 	WordSlice []string
 	Sentence  []string
-	Result    []string
+	Result    map[string][]string
 )
 
-func engine(num, wordlen int) {
+// func engine(num, wordlen int) {
+//  i := 0
+//  for {
+
+//   chain(wordlen)
+//   i++
+//   if len(Result) == num {
+//    printResult()
+//    break
+//   }
+
+//  }
+// }
+
+func printResult(prefix []string, wordCount int) {
+	rand.Seed(time.Now().UnixNano())
 	i := 0
+	Sentence = append(Sentence, prefix...)
 	for {
-		Sentence = []string{}
-		makeSentence(wordlen)
-		chain(strings.Join(Result[i:], " "))
+		temp := strings.Join(Sentence[i:], " ")
 		i++
-		if len(Result) == num {
-			printResult()
+		if _, exists := Result[temp]; !exists || len(Sentence) == wordCount {
 			break
 		}
 
-	}
-}
+		Sentence = append(Sentence, (Result[temp][rand.Intn(len(Result[temp]))]))
 
-func printResult() {
-	for i, k := range Result {
+	}
+
+	for i, k := range Sentence {
 		fmt.Print(k)
-		if i < len(Result)-1 {
+		if i < len(Sentence)-1 {
 			fmt.Print(" ")
 		}
+
 	}
 	fmt.Println()
+
+	// fmt.Print(" ")
+	//
+	// }
 }
 
 func read() {
@@ -57,48 +76,29 @@ func read() {
 	}
 }
 
-func makeSentence(given int) {
-	temp := ""
+// func makeSentence(given int) {
+//  temp := ""
 
-	for i := 0; i < len(WordSlice); i++ {
-		if i+given <= len(WordSlice) {
-			temp = strings.Join(WordSlice[i:i+given], " ")
+//  for i := 0; i < len(WordSlice); i++ {
+//   if i+given <= len(WordSlice) {
+//    temp = strings.Join(WordSlice[i:i+given], " ")
 
-			Sentence = append(Sentence, temp)
-			temp = ""
-		}
-	}
-}
+//    Sentence = append(Sentence, temp)
+//    temp = ""
+//   }
+//  }
+// }
 
-func chain(prefix string) {
-	var tempSlice []string
-	temper := []string{}
-	san, rndm := 0, 0
+func chain(wordlen int) {
+	Result = make(map[string][]string)
+	for i := range WordSlice {
+		if i < len(WordSlice)-wordlen {
+			tempSentence := strings.Join(WordSlice[i:i+wordlen], " ")
+			// fmt.Println(tempSentence)
 
-	if prefix == Sentence[len(Sentence)-1] {
-		printResult()
-		os.Exit(0)
-	}
-	for i, k := range Sentence {
-		if k == prefix {
-			san++
-			if i < len(Sentence)-1 {
-				rndm++
-
-				temper = strings.Fields(Sentence[i+1])
-				tempSlice = append(tempSlice, temper[len(temper)-1])
-				temper = []string{}
-
-			}
+			Result[tempSentence] = append(Result[tempSentence], WordSlice[i+wordlen])
 
 		}
-	}
-
-	if rndm != 0 {
-		Result = append(Result, tempSlice[rand.Intn(rndm)])
-	} else if san == 0 {
-		fmt.Println("Words not found")
-		os.Exit(0)
 	}
 }
 
@@ -110,6 +110,12 @@ func help() {
 
 func main() {
 	input := os.Args[1:]
+
+	wordCount := flag.Int("w", 100, "")
+	prefix := flag.String("p", "", "")
+
+	flag.Parse()
+
 	if len(input) != 0 && input[0] == "--help" {
 		help()
 		return
@@ -120,47 +126,60 @@ func main() {
 
 		fmt.Println("Error: invalid input or file should contain more than 2 words")
 		return
-	} else if len(input) == 0 {
-		Result = append(Result, WordSlice[:2]...)
-		engine(100, 2)
-
-	} else if input[0] == "-w" && len(input) == 2 {
-		Result = append(Result, WordSlice[:2]...)
-
-		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
-			engine(num, 2)
-		} else if err != nil || num > 10000 || num < 0 {
-			fmt.Println("Error: provide valid number.")
-		}
-	} else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" {
-		if len(strings.Fields(input[3])) <= 1 {
-			fmt.Println("Length of prefix not valid")
-			return
-		}
-		if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
-			Result = append(Result, strings.Fields(input[3])...)
-			engine(num, len(strings.Fields(input[3])))
-
-		} else if err != nil || num > 10000 || num < 0 {
-			fmt.Println("Error: provide valid number.")
-		}
-	} else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
-
-		num, err := strconv.Atoi(input[1])
-		san, errors := strconv.Atoi(input[5])
-		if len(strings.Fields(input[3])) <= 1 {
-			fmt.Println("Length of prefix not valid")
-			return
-		}
-		if errors != nil || err != nil || san > 5 || num > 10000 || num <= 0 || san < 2 || len(strings.Fields(input[3])) < san {
-			fmt.Println("Error: provide valid numbers")
-		} else if len(strings.Fields(input[3])) >= san {
-			slice := strings.Fields(input[3])
-			Result = append(Result, slice[:san]...)
-			engine(num, san)
-		}
-
-	} else {
-		help()
 	}
+
+	if *wordCount > 0 && *prefix != "" {
+		chain(2)
+		printResult(strings.Fields(*prefix), *wordCount)
+
+	}
+	// if *wordCount == 10 {
+	// 	chain(2)
+	// 	printResult(WordSlice[:2], *wordCount)
+
+	// }
+	// else if len(input) == 0 {
+	//  Result = append(Result, WordSlice[:2]...)
+	//  engine(100, 2)
+
+	// } else if *wordCount > 0 {
+	//  Result = append(Result, WordSlice[:2]...)
+
+	//  if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
+	//   engine(num, 2)
+	//  }
+	// else if err != nil  num > 10000  num < 0 {
+	//   fmt.Println("Error: provide valid number.")
+	//  }
+	// } else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" {
+	//  if len(strings.Fields(input[3])) <= 1 {
+	//   fmt.Println("Length of prefix not valid")
+	//   return
+	//  }
+	//  if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
+	//   Result = append(Result, strings.Fields(input[3])...)
+	//   engine(num, len(strings.Fields(input[3])))
+
+	//  } else if err != nil  num > 10000  num < 0 {
+	//   fmt.Println("Error: provide valid number.")
+	//  }
+	// } else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
+
+	//  num, err := strconv.Atoi(input[1])
+	//  san, errors := strconv.Atoi(input[5])
+	//  if len(strings.Fields(input[3])) <= 1 {
+	//   fmt.Println("Length of prefix not valid")
+	//   return
+	//  }
+	//  if errors != nil  err != nil  san > 5  num > 10000  num <= 0  san < 2  len(strings.Fields(input[3])) < san {
+	//   fmt.Println("Error: provide valid numbers")
+	//  } else if len(strings.Fields(input[3])) >= san {
+	//   slice := strings.Fields(input[3])
+	//   Result = append(Result, slice[:san]...)
+	//   engine(num, san)
+	//  }
+
+	// } else {
+	//  help()
+	// }
 }
