@@ -16,6 +16,8 @@ var (
 	Result    map[string][]string
 	Prefix    string
 	Input     []string
+	WordCount uint
+	PreLen    uint
 )
 
 func printResult(prefix []string, wordCount uint) {
@@ -44,7 +46,6 @@ func printResult(prefix []string, wordCount uint) {
 		}
 	}
 	fmt.Println()
-
 }
 
 func read() {
@@ -79,11 +80,30 @@ func chain(wordlen int) {
 			printResult(WordSlice, uint(len(strings.Fields(Prefix))))
 			os.Exit(0)
 		}
-
 	}
 	if _, exists := Result[Prefix]; !exists {
 		fmt.Println("words not found in the text!")
 		os.Exit(0)
+	}
+}
+
+func isValid() {
+	if WordCount < 2 || WordCount > 10000 {
+		fmt.Fprintln(os.Stderr, "Words should be more than 2 or less than 10000")
+		os.Exit(1)
+	}
+	if PreLen < 2 || PreLen > 5 {
+		fmt.Fprintln(os.Stderr, "Words should be more than 2 or less than 5")
+		os.Exit(1)
+
+	}
+	if Prefix == "" || len(strings.Fields(Prefix)) > 5 {
+		fmt.Fprintln(os.Stderr, "Words should be more than 2 or less than 5")
+		os.Exit(1)
+	}
+	if len(strings.Fields(Prefix)) != int(PreLen) {
+		fmt.Fprintln(os.Stderr, "Len of Prefix and length must be equal")
+		os.Exit(1)
 	}
 }
 
@@ -95,63 +115,29 @@ func help() {
 
 func main() {
 	Input = os.Args[1:]
-	var wordCount uint
-	var preLen uint
-
-	if len(Input) != 0 && Input[0] == "--help" || wordCount > 10000 {
+	read()
+	if len(Input) != 0 && Input[0] == "--help" || WordCount > 10000 {
 		help()
 		return
+	} else if len(WordSlice) <= 2 {
+		fmt.Println("Should be more than 2")
+		os.Exit(1)
 	}
 
-	flag.UintVar(&wordCount, "w", 100, "Enter valid numbers")
-	flag.StringVar(&Prefix, "p", "", "")
-	flag.UintVar(&preLen, "l", 2, "Enter valid numbers")
+	flag.UintVar(&WordCount, "w", 100, "Enter valid numbers")
+	flag.StringVar(&Prefix, "p", strings.Join(WordSlice[:2], " "), "")
+	flag.UintVar(&PreLen, "l", 2, "Enter valid numbers")
 
 	flag.Parse()
+	isValid()
 
-	read()
-	if wordCount > 0 && len(Input) == 0 && len(WordSlice) >= 2 && preLen >= 2 {
-		if wordCount > 10000 {
-			fmt.Println("Entered number is too much")
-			return
-		}
-		Prefix += strings.Join(WordSlice[:2], " ")
+	if len(Input) == 0 {
+
 		chain(2)
-		printResult(WordSlice[:2], wordCount)
+		printResult(WordSlice[:2], WordCount)
 
-	} else if len(WordSlice) >= 2 && wordCount > 0 && preLen >= 2 {
-		if wordCount > 10000 {
-			fmt.Println("Entered number is too much")
-			return
-		} else if len(WordSlice) == 2 && wordCount == 1 {
-			fmt.Println(WordSlice[0])
-			return
-		} else if wordCount == 1 {
-			fmt.Println("Error: minimum should be 2")
-			return
-		} else if Prefix != "" && preLen > 0 && preLen < 6 && len(Prefix) > 2 {
-			if len(strings.Fields(Prefix)) > 5 || wordCount == 0 || wordCount > 10000 || len(strings.Fields(Prefix)) != int(preLen) {
-				fmt.Println("Error : prefix is above limit or invalid number")
-			} else {
-				chain(len(strings.Fields(Prefix)))
-				printResult(strings.Fields(Prefix), wordCount)
-
-			}
-
-		} else if preLen < 6 && preLen >= 2 {
-			chain(len(strings.Fields(Prefix)))
-			printResult(strings.Fields(Prefix), wordCount)
-		}
-
-	} else if len(Prefix) == 0 {
-		chain(len(strings.Fields(Prefix)))
-		printResult(strings.Fields(Prefix), wordCount)
-
-	} else if len(WordSlice) == 0 {
-		fmt.Println("Provided file is empty")
-	} else if len(WordSlice) == 1 {
-		fmt.Println("Provided file consists only one word")
 	} else {
-		help()
+		chain(len(strings.Fields(Prefix)))
+		printResult(strings.Fields(Prefix), WordCount)
 	}
 }
