@@ -14,30 +14,18 @@ var (
 	WordSlice []string
 	Sentence  []string
 	Result    map[string][]string
+	Prefix    string
+	Input     []string
 )
 
-// func engine(num, wordlen int) {
-//  i := 0
-//  for {
-
-//   chain(wordlen)
-//   i++
-//   if len(Result) == num {
-//    printResult()
-//    break
-//   }
-
-//  }
-// }
-
-func printResult(prefix []string, wordCount int) {
+func printResult(prefix []string, wordCount uint) {
 	rand.Seed(time.Now().UnixNano())
 	i := 0
 	Sentence = append(Sentence, prefix...)
 	for {
 		temp := strings.Join(Sentence[i:], " ")
 		i++
-		if _, exists := Result[temp]; !exists || len(Sentence) == wordCount {
+		if _, exists := Result[temp]; !exists || uint(len(Sentence)) == wordCount {
 			break
 		}
 
@@ -46,17 +34,17 @@ func printResult(prefix []string, wordCount int) {
 	}
 
 	for i, k := range Sentence {
+		if wordCount == 1 && len(WordSlice) <= 2 {
+			fmt.Print(WordSlice[0])
+			break
+		}
 		fmt.Print(k)
 		if i < len(Sentence)-1 {
 			fmt.Print(" ")
 		}
-
 	}
 	fmt.Println()
 
-	// fmt.Print(" ")
-	//
-	// }
 }
 
 func read() {
@@ -76,110 +64,94 @@ func read() {
 	}
 }
 
-// func makeSentence(given int) {
-//  temp := ""
-
-//  for i := 0; i < len(WordSlice); i++ {
-//   if i+given <= len(WordSlice) {
-//    temp = strings.Join(WordSlice[i:i+given], " ")
-
-//    Sentence = append(Sentence, temp)
-//    temp = ""
-//   }
-//  }
-// }
-
 func chain(wordlen int) {
 	Result = make(map[string][]string)
 	for i := range WordSlice {
 		if i < len(WordSlice)-wordlen {
 			tempSentence := strings.Join(WordSlice[i:i+wordlen], " ")
-			// fmt.Println(tempSentence)
 
 			Result[tempSentence] = append(Result[tempSentence], WordSlice[i+wordlen])
 
+		} else if len(WordSlice) == len(Input) {
+			printResult(WordSlice, 2)
+			os.Exit(0)
+		} else if len(strings.Fields(Prefix)) == len(WordSlice) {
+			printResult(WordSlice, uint(len(strings.Fields(Prefix))))
+			os.Exit(0)
 		}
+
+	}
+	if _, exists := Result[Prefix]; !exists {
+		fmt.Println("words not found in the text!")
+		os.Exit(0)
 	}
 }
 
 func help() {
 	fmt.Print("Markov Chain text generator.", "\n", "\n")
 	fmt.Print("Usage:", "\n", "markovchain [-w <N>] [-p <S>] [-l <N>]", "\n", "markovchain --help", "\n", "\n")
-	fmt.Println("Options:", "\n", "--help   Show this screen.", "\n", "-w N   Number of maximum words", "\n", "-p S   Starting prefix. By default length is 2", "\n", "-l N   Prefix length. By default maximum is 5")
+	fmt.Println("Options:", "\n", "--help   Show this screen.", "\n", "-w N   Number of maximum words", "\n", "-p S   Starting prefix", "\n", "-l N   Prefix length")
 }
 
 func main() {
-	input := os.Args[1:]
+	Input = os.Args[1:]
+	var wordCount uint
+	var preLen uint
 
-	wordCount := flag.Int("w", 100, "")
-	prefix := flag.String("p", "", "")
-
-	flag.Parse()
-
-	if len(input) != 0 && input[0] == "--help" {
+	if len(Input) != 0 && Input[0] == "--help" || wordCount > 10000 {
 		help()
 		return
 	}
+
+	flag.UintVar(&wordCount, "w", 100, "Enter valid numbers")
+	flag.StringVar(&Prefix, "p", "", "")
+	flag.UintVar(&preLen, "l", 2, "Enter valid numbers")
+
+	flag.Parse()
+
 	read()
-
-	if len(WordSlice) <= 2 {
-
-		fmt.Println("Error: invalid input or file should contain more than 2 words")
-		return
-	}
-
-	if *wordCount > 0 && *prefix != "" {
+	if wordCount > 0 && len(Input) == 0 && len(WordSlice) >= 2 && preLen >= 2 {
+		if wordCount > 10000 {
+			fmt.Println("Entered number is too much")
+			return
+		}
+		Prefix += strings.Join(WordSlice[:2], " ")
 		chain(2)
-		printResult(strings.Fields(*prefix), *wordCount)
+		printResult(WordSlice[:2], wordCount)
 
+	} else if len(WordSlice) >= 2 && wordCount > 0 && preLen >= 2 {
+		if wordCount > 10000 {
+			fmt.Println("Entered number is too much")
+			return
+		} else if len(WordSlice) == 2 && wordCount == 1 {
+			fmt.Println(WordSlice[0])
+			return
+		} else if wordCount == 1 {
+			fmt.Println("Error: minimum should be 2")
+			return
+		} else if Prefix != "" && preLen > 0 && preLen < 6 && len(Prefix) > 2 {
+			if len(strings.Fields(Prefix)) > 5 || wordCount == 0 || wordCount > 10000 || len(strings.Fields(Prefix)) != int(preLen) {
+				fmt.Println("Error : prefix is above limit or invalid number")
+			} else {
+				chain(len(strings.Fields(Prefix)))
+				printResult(strings.Fields(Prefix), wordCount)
+
+			}
+
+		} else if preLen < 6 && preLen >= 2 {
+			chain(len(strings.Fields(Prefix)))
+			printResult(strings.Fields(Prefix), wordCount)
+		}
+
+	} else if len(Prefix) == 0 {
+		chain(len(strings.Fields(Prefix)))
+		printResult(strings.Fields(Prefix), wordCount)
+
+	} else if len(WordSlice) == 0 {
+		fmt.Println("Provided file is empty")
+	} else if len(WordSlice) == 1 {
+		fmt.Println("Provided file consists only one word")
+	} else {
+		help()
 	}
-	// if *wordCount == 10 {
-	// 	chain(2)
-	// 	printResult(WordSlice[:2], *wordCount)
-
-	// }
-	// else if len(input) == 0 {
-	//  Result = append(Result, WordSlice[:2]...)
-	//  engine(100, 2)
-
-	// } else if *wordCount > 0 {
-	//  Result = append(Result, WordSlice[:2]...)
-
-	//  if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
-	//   engine(num, 2)
-	//  }
-	// else if err != nil  num > 10000  num < 0 {
-	//   fmt.Println("Error: provide valid number.")
-	//  }
-	// } else if len(input) == 4 && input[0] == "-w" && input[2] == "-p" {
-	//  if len(strings.Fields(input[3])) <= 1 {
-	//   fmt.Println("Length of prefix not valid")
-	//   return
-	//  }
-	//  if num, err := strconv.Atoi(input[1]); err == nil && num < 10001 && num >= 0 {
-	//   Result = append(Result, strings.Fields(input[3])...)
-	//   engine(num, len(strings.Fields(input[3])))
-
-	//  } else if err != nil  num > 10000  num < 0 {
-	//   fmt.Println("Error: provide valid number.")
-	//  }
-	// } else if len(input) == 6 && input[0] == "-w" && input[2] == "-p" && input[4] == "-l" {
-
-	//  num, err := strconv.Atoi(input[1])
-	//  san, errors := strconv.Atoi(input[5])
-	//  if len(strings.Fields(input[3])) <= 1 {
-	//   fmt.Println("Length of prefix not valid")
-	//   return
-	//  }
-	//  if errors != nil  err != nil  san > 5  num > 10000  num <= 0  san < 2  len(strings.Fields(input[3])) < san {
-	//   fmt.Println("Error: provide valid numbers")
-	//  } else if len(strings.Fields(input[3])) >= san {
-	//   slice := strings.Fields(input[3])
-	//   Result = append(Result, slice[:san]...)
-	//   engine(num, san)
-	//  }
-
-	// } else {
-	//  help()
-	// }
 }
