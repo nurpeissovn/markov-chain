@@ -115,11 +115,12 @@ func help() {
 
 func main() {
 	Input = os.Args[1:]
-	read()
-	if len(Input) != 0 && Input[0] == "--help" || WordCount > 10000 {
+	if len(Input) != 0 && Input[0] == "--help"  {
 		help()
 		return
-	} else if len(WordSlice) <= 2 {
+	} 
+	read()
+	 if len(WordSlice) <= 2 {
 		fmt.Println("Should be more than 2")
 		os.Exit(1)
 	}
